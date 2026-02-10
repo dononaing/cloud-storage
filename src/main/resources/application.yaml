@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: cloud-storage
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://host.docker.internal:5430/cloud_storage_db
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        show_sql: true
+server:
+  error:
+    whitelabel:
+      enabled: false
+    include-message: always
+  servlet:
+    context-path: /api
+  port: 8080
+
+logging:
+  level:
+    org.springframework.security: INFO
