@@ -1,7 +1,6 @@
 package me.cema.cloud_storage.configurations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.AuthenticationException;
@@ -13,12 +12,12 @@ import java.util.Map;
 
 @Component
 public class JsonAuthenticationEntryPoint implements AuthenticationEntryPoint {
-    ObjectMapper objectMapper = new JsonMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().write(objectMapper.writeValueAsString(Map.of("message", authException.getMessage())));
+        response.getWriter().write(objectMapper.writeValueAsString(Map.of("message", authException.getLocalizedMessage())));
     }
 }

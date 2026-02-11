@@ -1,7 +1,6 @@
 package me.cema.cloud_storage.configurations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.access.AccessDeniedException;
@@ -13,7 +12,7 @@ import java.util.Map;
 
 @Component
 public class JsonAccessDeniedHandler implements AccessDeniedHandler {
-    ObjectMapper objectMapper = new JsonMapper();
+     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {

@@ -50,7 +50,7 @@ public class AuthenticationService {
         return new UserRegistrationResponseDTO(credentials.getUsername());
     }
 
-    public UserAuthenticationResponseDTO checkAndAuthenticate(UserRequestDTO credentials, HttpServletRequest request) {
+    public UserAuthenticationResponseDTO authenticate(UserRequestDTO credentials, HttpServletRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         credentials.getUsername(),

@@ -25,6 +25,7 @@ public class AuthenticationController {
     @PostMapping("/sign-up")
     public ResponseEntity<UserRegistrationResponseDTO> signUp(@RequestBody @Valid UserRequestDTO credentials,
                                                               HttpServletRequest request) {
+
         UserRegistrationResponseDTO response = authenticationService.save(credentials, request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -36,11 +37,10 @@ public class AuthenticationController {
     public ResponseEntity<UserAuthenticationResponseDTO> singIn(@RequestBody @Valid UserRequestDTO credentials,
                                                                 HttpServletRequest request) {
 
-        UserAuthenticationResponseDTO response = authenticationService.checkAndAuthenticate(credentials, request);
+        UserAuthenticationResponseDTO response = authenticationService.authenticate(credentials, request);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(response);
     }
-
 }
