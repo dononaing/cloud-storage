@@ -3,13 +3,11 @@ package me.cema.cloud_storage.services;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import me.cema.cloud_storage.dto.UserRegistrationResponse;
+import me.cema.cloud_storage.dto.UserRequest;
 import me.cema.cloud_storage.models.user.User;
-import me.cema.cloud_storage.models.user.dto.UserAuthenticationResponseDTO;
-import me.cema.cloud_storage.models.user.dto.UserRegistrationResponseDTO;
-import me.cema.cloud_storage.models.user.dto.UserRequestDTO;
 import me.cema.cloud_storage.repositories.UserRepository;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -22,12 +20,11 @@ import org.springframework.web.client.HttpClientErrorException;
 
 @Service
 @RequiredArgsConstructor
-public class AuthenticationService {
+public class RegistrationService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
 
-    public UserRegistrationResponseDTO save(UserRequestDTO credentials, HttpServletRequest request) {
+    public UserRegistrationResponse save(UserRequest credentials, HttpServletRequest request) {
         if (userRepository.findByUsername(credentials.getUsername()).isPresent()) {
             throw new HttpClientErrorException(HttpStatus.CONFLICT, "Username already exists");
         }
@@ -44,21 +41,9 @@ public class AuthenticationService {
                 null,
                 user.getAuthorities()
         );
-
         createSession(authentication, request);
 
-        return new UserRegistrationResponseDTO(credentials.getUsername());
-    }
-
-    public UserAuthenticationResponseDTO authenticate(UserRequestDTO credentials, HttpServletRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        credentials.getUsername(),
-                        credentials.getPassword()
-                )
-        );
-        createSession(authentication, request);
-        return new UserAuthenticationResponseDTO(credentials.getUsername());
+        return new UserRegistrationResponse(credentials.getUsername());
     }
 
     private static void createSession(Authentication authentication, HttpServletRequest request) {

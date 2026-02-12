@@ -1,11 +1,11 @@
-package me.cema.cloud_storage.models.user.dto;
+package me.cema.cloud_storage.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class UserRequestDTO {
+public class UserRequest {
     @NotBlank(message = "please enter the username")
     @Size(min = 3, max = 50, message = "name must be between 3 and 50 characters")
     private String username;

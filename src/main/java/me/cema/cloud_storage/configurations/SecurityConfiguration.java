@@ -1,5 +1,6 @@
 package me.cema.cloud_storage.configurations;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 @Configuration
@@ -21,6 +23,7 @@ public class SecurityConfiguration {
 
     private final JsonAccessDeniedHandler jsonAccessDeniedHandler;
     private final JsonAuthenticationEntryPoint jsonAuthenticationEntryPoint;
+    private final AuthenticatedLogoutHandler authenticatedLogoutHandler;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -32,13 +35,15 @@ public class SecurityConfiguration {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public JsonUsernamePasswordAuthenticationFilter jsonUsernamePasswordAuthenticationFilter(AuthenticationManager authenticationManager, ObjectMapper objectMapper) {
+        return new JsonUsernamePasswordAuthenticationFilter(authenticationManager, objectMapper);
+    }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JsonUsernamePasswordAuthenticationFilter jsonUsernamePasswordAuthenticationFilter) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exc ->
                         exc
                                 .authenticationEntryPoint(jsonAuthenticationEntryPoint)
@@ -47,13 +52,13 @@ public class SecurityConfiguration {
                         auth
                                 .requestMatchers("/auth/sign-up", "/auth/sign-in").anonymous()
                                 .anyRequest().authenticated()
-                ).logout(logout ->
+                ).addFilterAt(jsonUsernamePasswordAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .logout(logout ->
                         logout
+                                .addLogoutHandler(authenticatedLogoutHandler)
                                 .logoutUrl("/auth/sign-out")
-                                .logoutSuccessHandler((request, response, authentication) -> {
-                                            response.setStatus(HttpStatus.NO_CONTENT.value());
-                                            authentication.setAuthenticated(false);
-                                        }
+                                .logoutSuccessHandler((request, response, authentication) ->
+                                        response.setStatus(HttpStatus.NO_CONTENT.value())
                                 )
                                 .invalidateHttpSession(true)
                                 .clearAuthentication(true)

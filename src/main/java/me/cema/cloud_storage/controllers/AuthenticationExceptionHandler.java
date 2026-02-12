@@ -1,5 +1,6 @@
 package me.cema.cloud_storage.controllers;
 
+import me.cema.cloud_storage.dto.UserExceptionResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,40 +12,39 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @ControllerAdvice()
 public class AuthenticationExceptionHandler {
 
     @ExceptionHandler(HttpClientErrorException.class)
-    public ResponseEntity<Map<String, String>> handleHttpClientErrorException(HttpClientErrorException exception) {
+    public ResponseEntity<UserExceptionResponse> handleHttpClientErrorException(HttpClientErrorException exception) {
         return ResponseEntity.status(exception.getStatusCode())
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Map.of("message", exception.getMessage()));
+                .body(new UserExceptionResponse(exception.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+    public ResponseEntity<UserExceptionResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
         String combinedMessages = exception.getFieldErrors().stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(";"));
         return ResponseEntity.status(exception.getStatusCode())
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Map.of("message", combinedMessages));
+                .body(new UserExceptionResponse(combinedMessages));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
+    public ResponseEntity<UserExceptionResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Map.of("message", exception.getMessage().split(":")[0]));
+                .body(new UserExceptionResponse(exception.getMessage().split(":")[0]));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Map<String, String>> handleBadCredentialsException(BadCredentialsException exception) {
+    public ResponseEntity<UserExceptionResponse> handleBadCredentialsException(BadCredentialsException exception) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Map.of("message", exception.getMessage()));
+                .body(new UserExceptionResponse(exception.getMessage()));
     }
 }
