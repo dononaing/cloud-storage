@@ -50,7 +50,7 @@ public class SecurityConfiguration {
                                 .accessDeniedHandler(jsonAccessDeniedHandler)
                 ).authorizeHttpRequests(auth ->
                         auth
-                                .requestMatchers("/auth/sign-up", "/auth/sign-in").anonymous()
+                                .requestMatchers("/auth/sign-up").anonymous()
                                 .anyRequest().authenticated()
                 ).addFilterAt(jsonUsernamePasswordAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(logout ->

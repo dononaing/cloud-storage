@@ -26,7 +26,7 @@ public class RegistrationService {
 
     public UserRegistrationResponse save(UserRequest credentials, HttpServletRequest request) {
         if (userRepository.findByUsername(credentials.getUsername()).isPresent()) {
-            throw new HttpClientErrorException(HttpStatus.CONFLICT, "Username already exists");
+            throw new HttpClientErrorException(HttpStatus.CONFLICT, "username already exists");
         }
 
         User user = new User(

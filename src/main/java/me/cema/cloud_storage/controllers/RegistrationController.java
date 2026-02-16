@@ -14,17 +14,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Controller()
+@Controller
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-public class AuthenticationController {
+public class RegistrationController {
 
     private final RegistrationService registrationService;
 
     @PostMapping("/sign-up")
     public ResponseEntity<UserRegistrationResponse> signUp(@RequestBody @Valid UserRequest credentials,
                                                            HttpServletRequest request) {
-
         UserRegistrationResponse response = registrationService.save(credentials, request);
 
         return ResponseEntity.status(HttpStatus.CREATED)

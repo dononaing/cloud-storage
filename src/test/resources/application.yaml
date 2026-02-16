@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: cloud-storage
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+logging:
+  level:
+    org.springframework.security: debug
+server:
+  servlet:
+    context-path: /api

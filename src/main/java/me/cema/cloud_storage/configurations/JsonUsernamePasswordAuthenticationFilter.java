@@ -59,8 +59,8 @@ public class JsonUsernamePasswordAuthenticationFilter extends UsernamePasswordAu
                 credentials.getUsername(),
                 credentials.getPassword()
         );
-        Authentication authenticated = SecurityContextHolder.getContext().getAuthentication();
-        if (authenticated != null && authenticated.isAuthenticated()) {
+        Authentication requestAuthentication = SecurityContextHolder.getContext().getAuthentication();
+        if (requestAuthentication != null && requestAuthentication.isAuthenticated()) {
             throw new AuthenticationServiceException("user already authenticated");
         }
         Authentication authentication = getAuthenticationManager().authenticate(token);
