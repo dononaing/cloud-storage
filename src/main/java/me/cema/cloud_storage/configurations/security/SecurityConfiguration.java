@@ -1,4 +1,4 @@
-package me.cema.cloud_storage.configurations;
+package me.cema.cloud_storage.configurations.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +51,7 @@ public class SecurityConfiguration {
                 ).authorizeHttpRequests(auth ->
                         auth
                                 .requestMatchers("/auth/sign-up").anonymous()
-                                .anyRequest().authenticated()
+                                .anyRequest().permitAll()
                 ).addFilterAt(jsonUsernamePasswordAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(logout ->
                         logout

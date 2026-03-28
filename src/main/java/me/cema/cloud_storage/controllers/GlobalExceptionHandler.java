@@ -1,6 +1,6 @@
 package me.cema.cloud_storage.controllers;
 
-import me.cema.cloud_storage.dto.UserExceptionResponse;
+import me.cema.cloud_storage.dto.user.UserExceptionResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +15,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.util.stream.Collectors;
 
 @ControllerAdvice()
-public class AuthenticationExceptionHandler {
+public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpClientErrorException.class)
     public ResponseEntity<UserExceptionResponse> handleHttpClientErrorException(HttpClientErrorException exception) {

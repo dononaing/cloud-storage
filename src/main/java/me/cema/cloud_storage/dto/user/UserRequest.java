@@ -1,4 +1,4 @@
-package me.cema.cloud_storage.dto;
+package me.cema.cloud_storage.dto.user;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

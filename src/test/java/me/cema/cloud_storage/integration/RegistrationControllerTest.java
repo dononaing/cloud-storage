@@ -1,9 +1,9 @@
-package me.cema.cloud_storage.integration.controllers;
+package me.cema.cloud_storage.integration;
 
 import me.cema.cloud_storage.CloudStorageApplicationTests;
-import me.cema.cloud_storage.dto.UserExceptionResponse;
-import me.cema.cloud_storage.dto.UserRegistrationResponse;
-import me.cema.cloud_storage.dto.UserRequest;
+import me.cema.cloud_storage.dto.user.UserExceptionResponse;
+import me.cema.cloud_storage.dto.user.UserRegistrationResponse;
+import me.cema.cloud_storage.dto.user.UserRequest;
 import me.cema.cloud_storage.models.user.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;

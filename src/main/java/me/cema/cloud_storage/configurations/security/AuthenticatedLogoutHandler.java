@@ -1,4 +1,4 @@
-package me.cema.cloud_storage.configurations;
+package me.cema.cloud_storage.configurations.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

@@ -1,9 +1,9 @@
-package me.cema.cloud_storage.configurations;
+package me.cema.cloud_storage.configurations.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import me.cema.cloud_storage.dto.UserExceptionResponse;
+import me.cema.cloud_storage.dto.user.UserExceptionResponse;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
