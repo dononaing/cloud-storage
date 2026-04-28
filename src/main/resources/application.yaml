@@ -2,16 +2,18 @@ spring:
   application:
     name: cloud-storage
   datasource:
-    driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://host.docker.internal:5430/cloud_storage_db
     username: postgres
     password: postgres
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: validate
     properties:
       hibernate:
         show_sql: true
+  jackson:
+    default-property-inclusion: non_null
 server:
   error:
     whitelabel:
@@ -22,9 +24,10 @@ server:
     include-stacktrace: never
     include-exception: false
   servlet:
+    session:
+      timeout: 30m
     context-path: /api
   port: 8080
-
 logging:
   level:
     org.springframework.security: INFO

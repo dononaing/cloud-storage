@@ -1,8 +1,8 @@
 package me.cema.cloud_storage;
 
 import jakarta.annotation.PostConstruct;
-import me.cema.cloud_storage.configurations.PostgresTestcontainersConfiguration;
-import me.cema.cloud_storage.repositories.UserRepository;
+import me.cema.cloud_storage.configuration.PostgresTestcontainersConfiguration;
+import me.cema.cloud_storage.repository.UserRepository;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,23 +18,16 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith({SpringExtension.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ContextConfiguration(initializers = {PostgresTestcontainersConfiguration.class /*MinioTestcontainersConfiguration.class*/})
+@ContextConfiguration(initializers = {PostgresTestcontainersConfiguration.class})
 public class CloudStorageApplicationTests {
     @LocalServerPort
     protected int port;
-
     @Autowired
     public UserRepository userRepository;
-
-   /* @Autowired
-    public MinioClient minioClient;*/
-
     @Autowired
     public BCryptPasswordEncoder passwordEncoder;
-
     @Value("${server.servlet.context-path}")
     private String contextPath;
-
     protected static final ObjectMapper objectMapper = new ObjectMapper();
     protected WebTestClient webTestClient;
 

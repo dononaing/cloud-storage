@@ -1,4 +1,4 @@
-package me.cema.cloud_storage.configurations.minio;
+package me.cema.cloud_storage.configuration.minio;
 
 import io.minio.MinioClient;
 import org.springframework.context.annotation.Bean;
@@ -6,9 +6,9 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class MinioConfiguration {
-    private final static String URL = "http://localhost:9000";
-    private final static String USERNAME = "minioadmin";
-    private final static String PASSWORD = "minioadmin";
+    private static final String URL = "http://localhost:9000";
+    private static final String USERNAME = "minioadmin";
+    private static final String PASSWORD = "minioadmin";
 
     @Bean
     public MinioClient minioClient() {

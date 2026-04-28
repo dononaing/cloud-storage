@@ -1,4 +1,4 @@
-package me.cema.cloud_storage.configurations.security;
+package me.cema.cloud_storage.configuration.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;

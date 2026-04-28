@@ -1,4 +1,4 @@
-package me.cema.cloud_storage.controllers;
+package me.cema.cloud_storage.controller;
 
 import me.cema.cloud_storage.dto.user.UserExceptionResponse;
 import org.springframework.http.HttpStatus;
@@ -11,11 +11,19 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.stream.Collectors;
 
 @ControllerAdvice()
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<UserExceptionResponse> handleResponseStatusException(ResponseStatusException exception) {
+        return ResponseEntity.status(exception.getStatusCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new UserExceptionResponse(exception.getMessage()));
+    }
 
     @ExceptionHandler(HttpClientErrorException.class)
     public ResponseEntity<UserExceptionResponse> handleHttpClientErrorException(HttpClientErrorException exception) {

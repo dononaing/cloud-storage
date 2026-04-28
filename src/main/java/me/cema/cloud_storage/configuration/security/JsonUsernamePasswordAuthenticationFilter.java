@@ -1,4 +1,4 @@
-package me.cema.cloud_storage.configurations.security;
+package me.cema.cloud_storage.configuration.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -7,9 +7,9 @@ import jakarta.servlet.http.HttpSession;
 import me.cema.cloud_storage.dto.user.UserAuthenticationResponse;
 import me.cema.cloud_storage.dto.user.UserExceptionResponse;
 import me.cema.cloud_storage.dto.user.UserRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -31,13 +31,13 @@ public class JsonUsernamePasswordAuthenticationFilter extends UsernamePasswordAu
         setFilterProcessesUrl("/auth/sign-in");
 
         setAuthenticationFailureHandler((request, response, exception) -> {
-            response.setStatus(403);
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.getWriter().write(objectMapper.writeValueAsString(new UserExceptionResponse(exception.getMessage())));
         });
 
         setAuthenticationSuccessHandler((request, response, authentication) -> {
-            response.setStatus(200);
+            response.setStatus(HttpStatus.OK.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             UserAuthenticationResponse userAuthenticationResponse = new UserAuthenticationResponse(authentication.getName());
             response.getWriter().write(objectMapper.writeValueAsString(userAuthenticationResponse));
@@ -59,10 +59,6 @@ public class JsonUsernamePasswordAuthenticationFilter extends UsernamePasswordAu
                 credentials.getUsername(),
                 credentials.getPassword()
         );
-        Authentication requestAuthentication = SecurityContextHolder.getContext().getAuthentication();
-        if (requestAuthentication != null && requestAuthentication.isAuthenticated()) {
-            throw new AuthenticationServiceException("user already authenticated");
-        }
         Authentication authentication = getAuthenticationManager().authenticate(token);
         setDetails(request, token);
         createSession(authentication, request);

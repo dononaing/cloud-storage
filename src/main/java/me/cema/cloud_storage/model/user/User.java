@@ -1,4 +1,4 @@
-package me.cema.cloud_storage.models.user;
+package me.cema.cloud_storage.model.user;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,4 +1,4 @@
-package me.cema.cloud_storage.configurations;
+package me.cema.cloud_storage.configuration;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.test.util.TestPropertyValues;
@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PostgresTestcontainersConfiguration implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+
     private static final String IMAGE_NAME = "postgres:18.1-alpine3.23";
     private static final String DATABASE_NAME = "test_cloud_storage_db";
     private static final String USERNAME = "postgres";

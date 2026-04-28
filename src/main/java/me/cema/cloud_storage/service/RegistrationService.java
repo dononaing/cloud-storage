@@ -1,12 +1,12 @@
-package me.cema.cloud_storage.services;
+package me.cema.cloud_storage.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import me.cema.cloud_storage.dto.user.UserRegistrationResponse;
 import me.cema.cloud_storage.dto.user.UserRequest;
-import me.cema.cloud_storage.models.user.User;
-import me.cema.cloud_storage.repositories.UserRepository;
+import me.cema.cloud_storage.model.user.User;
+import me.cema.cloud_storage.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,14 +28,12 @@ public class RegistrationService {
         if (userRepository.findByUsername(credentials.getUsername()).isPresent()) {
             throw new HttpClientErrorException(HttpStatus.CONFLICT, "username already exists");
         }
-
         User user = new User(
                 null,
                 credentials.getUsername(),
                 passwordEncoder.encode(credentials.getPassword())
         );
         userRepository.save(user);
-
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 user.getUsername(),
                 null,

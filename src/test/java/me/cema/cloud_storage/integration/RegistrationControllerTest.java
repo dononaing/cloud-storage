@@ -4,7 +4,7 @@ import me.cema.cloud_storage.CloudStorageApplicationTests;
 import me.cema.cloud_storage.dto.user.UserExceptionResponse;
 import me.cema.cloud_storage.dto.user.UserRegistrationResponse;
 import me.cema.cloud_storage.dto.user.UserRequest;
-import me.cema.cloud_storage.models.user.User;
+import me.cema.cloud_storage.model.user.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -33,7 +33,7 @@ class RegistrationControllerTest extends CloudStorageApplicationTests {
                 .exchange();
         unauthenticatedExchange.expectStatus().isEqualTo(201);
         unauthenticatedExchange.expectBody().json(objectMapper.writeValueAsString(new UserRegistrationResponse(userRequest.getUsername())));
-        unauthenticatedExchange.expectCookie().exists("JSESSIONID");
+        unauthenticatedExchange.expectCookie().exists("SESSION");
     }
 
     @Test
@@ -72,17 +72,17 @@ class RegistrationControllerTest extends CloudStorageApplicationTests {
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange();
         exchange.expectStatus().isEqualTo(201);
-        exchange.expectCookie().exists("JSESSIONID");
+        exchange.expectCookie().exists("SESSION");
 
         String sessionId = exchange.returnResult(Void.class)
                 .getResponseCookies()
-                .getFirst("JSESSIONID")
+                .getFirst("SESSION")
                 .getValue();
 
         WebTestClient.ResponseSpec authenticatedExchange = webTestClient
                 .post()
                 .uri("/auth/sign-up")
-                .cookies(cookies -> cookies.add("JSESSIONID", sessionId))
+                .cookies(cookies -> cookies.add("SESSION", sessionId))
                 .bodyValue(userRequest)
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange();
