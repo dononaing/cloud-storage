@@ -9,9 +9,9 @@ import lombok.Data;
 @AllArgsConstructor
 public class UserRequest {
     @NotBlank(message = "please enter the username")
-    @Size(min = 3, max = 50, message = "name must be between 3 and 50 characters")
+    @Size(min = 5, max = 20, message = "name must be between 5 and 20 characters")
     private String username;
     @NotBlank(message = "please enter the password")
-    @Size(min = 8, max = 255, message = "password must be between 8 and 255 characters")
+    @Size(min = 5, max = 20, message = "password must be between 5 and 20 characters")
     private String password;
 }

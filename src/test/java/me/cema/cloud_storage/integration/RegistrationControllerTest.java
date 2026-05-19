@@ -6,6 +6,7 @@ import me.cema.cloud_storage.dto.user.UserRegistrationResponse;
 import me.cema.cloud_storage.dto.user.UserRequest;
 import me.cema.cloud_storage.model.user.User;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -14,6 +15,7 @@ import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingExcept
 
 class RegistrationControllerTest extends CloudStorageApplicationTests {
 
+    @BeforeAll
     @AfterEach
     void clearPostgresContainer() {
         userRepository.deleteAll();
@@ -67,7 +69,7 @@ class RegistrationControllerTest extends CloudStorageApplicationTests {
 
         WebTestClient.ResponseSpec exchange = webTestClient
                 .post()
-                .uri("/auth/sign-up")
+                .uri("/api/auth/sign-up")
                 .bodyValue(userRequest)
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange();

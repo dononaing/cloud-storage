@@ -10,7 +10,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.stream.Collectors;
@@ -20,13 +19,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<UserExceptionResponse> handleResponseStatusException(ResponseStatusException exception) {
-        return ResponseEntity.status(exception.getStatusCode())
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(new UserExceptionResponse(exception.getMessage()));
-    }
-
-    @ExceptionHandler(HttpClientErrorException.class)
-    public ResponseEntity<UserExceptionResponse> handleHttpClientErrorException(HttpClientErrorException exception) {
         return ResponseEntity.status(exception.getStatusCode())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(new UserExceptionResponse(exception.getMessage()));

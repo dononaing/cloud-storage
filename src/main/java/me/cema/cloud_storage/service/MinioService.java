@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import me.cema.cloud_storage.dto.resourse.MyItem;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
@@ -32,7 +31,7 @@ public class MinioService {
                         .recursive(isRecursive)
                         .build());
         if (!results.iterator().hasNext()) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "resource not found");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "resource not found");
         }
         return Lists.newArrayList(results)
                 .stream()
@@ -55,8 +54,8 @@ public class MinioService {
         return listObjects(key, 1000, true);
     }
 
-    public List<MyItem> listObjectsFindFirst(String key) {
-        return listObjects(key, 1, false);
+    public void listObjectsFindFirst(String key) {
+        listObjects(key, 1, false);
     }
 
     public MyItem statObject(String key) {
@@ -144,7 +143,7 @@ public class MinioService {
             return operation.execute();
         } catch (ErrorResponseException e) {
             if ("NoSuchKey".equals(e.errorResponse().code())) {
-                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "resource not found");
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "resource not found");
             } else {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         "minio error: " + e.errorResponse().message(), e);

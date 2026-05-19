@@ -8,7 +8,6 @@ import me.cema.cloud_storage.dto.resourse.ResourceResponse;
 import me.cema.cloud_storage.dto.resourse.ResourceType;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -16,6 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -58,7 +58,7 @@ public class ResourceService {
         if (isDirectory(key)) {
             List<MyItem> itemsToRemove = minioService.listObjectsRecursive(key);
             if (itemsToRemove.isEmpty()) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "directory does not exist");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "directory does not exist");
             }
             List<DeleteObject> keysToRemove = itemsToRemove
                     .stream()
@@ -87,13 +87,13 @@ public class ResourceService {
     private StreamingResponseBody writeDirectoryToZip(String key) {
         return outputStream -> {
             List<MyItem> results = minioService.listObjectsRecursive(key);
-            ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
-            for (MyItem item : results) {
-                String name = item.getName();
-                zipOutputStream.putNextEntry(new ZipEntry(name.replaceFirst(key, "")));
-                zipOutputStream.write(minioService.getObject(name));
+            try (ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
+                for (MyItem item : results) {
+                    String name = item.getName();
+                    zipOutputStream.putNextEntry(new ZipEntry(name.substring(key.length())));
+                    zipOutputStream.write(minioService.getObject(name));
+                }
             }
-            zipOutputStream.close();
         };
     }
 
@@ -101,7 +101,7 @@ public class ResourceService {
         from = validatePath(from);
         to = validatePath(to);
         if (from.equals(to) || (from.charAt(from.length() - 1) != to.charAt(to.length() - 1))) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "\"from\" and \"to\" parameters are not valid");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "\"from\" and \"to\" parameters are not valid");
         }
 
         String fromKey = keyOf(from, id);
@@ -131,7 +131,7 @@ public class ResourceService {
     private MyItem moveFile(String fromKey, String toKey) {
         MyItem item = minioService.statObject(fromKey);
         if (fileExist(toKey)) {
-            throw new HttpClientErrorException(HttpStatus.CONFLICT, "file by \"to\" already exist");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "file by \"to\" already exist");
         }
 
         minioService.copyObject(item.getName(), toKey);
@@ -164,30 +164,23 @@ public class ResourceService {
         minioService.removeObjects(objectsToDelete);
     }
 
-    public List<ResourceResponse> upload(String directoryName, MultipartFile[] files, Long id) {
+    public List<ResourceResponse> upload(String directoryName, List<MultipartFile> files, Long id) {
         directoryName = validatePath(directoryName);
         if (!directoryName.endsWith("/")) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "path should end with \"/\"");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "path should end with \"/\"");
         }
         if (!directoryExist(keyOf(directoryName, id))) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "directory does not exist: " + directoryName);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "directory does not exist: " + directoryName);
         }
         List<ResourceResponse> result = new ArrayList<>();
         List<DeleteObject> uploadedObjects = new ArrayList<>();
         for (MultipartFile file : files) {
-            int lastIndexOfSlash = file.getOriginalFilename().lastIndexOf("/");
-            String parent = file.getOriginalFilename().substring(0, lastIndexOfSlash + 1);
-            while (lastIndexOfSlash != -1) {
-                uploadEmptyDirectory(parent, id);
-                lastIndexOfSlash = parent.lastIndexOf("/");
-                parent = parent.substring(0, lastIndexOfSlash + 1);
-            }
             String path = directoryName + file.getOriginalFilename();
             String key = keyOf(path, id);
             long size = file.getSize();
             if (fileExist(key)) {
                 minioService.removeObjects(uploadedObjects);
-                throw new HttpClientErrorException(HttpStatus.CONFLICT, "file already exist: " + file.getOriginalFilename());
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "file already exist: " + file.getOriginalFilename());
             }
             try {
                 InputStream inputStream = file.getInputStream();
@@ -210,12 +203,16 @@ public class ResourceService {
     public List<ResourceResponse> getDirectoryContent(String path, Long id) {
         path = validatePath(path);
         if (!isDirectory(path)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "path should end with /");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "path should end with /");
         }
+        String directoryKey = keyOf(path, id);
         List<MyItem> myItems = minioService.listObjects(keyOf(path, id), 1000, false);
         List<ResourceResponse> result = new ArrayList<>();
         for (MyItem item : myItems) {
             String key = item.getName();
+            if (directoryKey.equals(key)) {
+                continue;
+            }
             boolean isDirectory = isDirectory(key);
             Resource resource = getResource(key.substring(key.indexOf("/")), isDirectory);
             result.add(new ResourceResponse(
@@ -230,29 +227,26 @@ public class ResourceService {
 
     public List<ResourceResponse> search(String query, Long id) {
         query = validatePath(query);
-        boolean isDirectory = isDirectory(query);
-        query = isDirectory(query) ? query.substring(0, query.lastIndexOf("/")) : query;
         List<MyItem> myItems = minioService.listObjectsRecursive(keyOf("", id));
         List<ResourceResponse> response = new ArrayList<>();
         for (MyItem item : myItems) {
             String absoluteKey = item.getName();
+            if (isDirectory(absoluteKey)) {
+                continue;
+            }
             String key = absoluteKey.substring(absoluteKey.indexOf("/"));
-            int lastSlashPlusOne = key.lastIndexOf("/") + 1;
-            String path = key.substring(0, lastSlashPlusOne);
-            String fileName = key.substring(lastSlashPlusOne);
-            String candidate = isDirectory ? path : fileName;
-            if (candidate.contains(query)) {
-                Resource resource = getResource(key, isDirectory(key));
+            if (key.contains(query)) {
+                Resource resource = getResource(key, false);
                 response.add(new ResourceResponse(
                         resource.getPath(),
                         resource.getName(),
-                        isDirectory ? null : item.getSize(),
-                        isDirectory ? ResourceType.DIRECTORY : ResourceType.FILE
+                        item.getSize(),
+                        ResourceType.FILE
                 ));
             }
         }
         if (response.isEmpty()) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "resource not found");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "resource not found");
         }
         return response;
     }
@@ -260,16 +254,16 @@ public class ResourceService {
     public ResourceResponse uploadEmptyDirectory(String path, Long id) {
         path = validatePath(path);
         if (!isDirectory(path)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "path must end with /");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "path must end with /");
         }
         Resource resource = getResource(path, true);
         String parent = resource.getPath();
-        if (!directoryExist(keyOf(parent, id))) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "parent directory does not exist");
+        if (!directoryExist(keyOf(parent, id)) && !Objects.equals(parent, "/")) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "parent directory does not exist");
         }
         String key = keyOf(path, id);
         if (directoryExist(key)) {
-            throw new HttpClientErrorException(HttpStatus.CONFLICT, "directory already exist");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "directory already exist");
         }
         minioService.putStubObject(key);
         return new ResourceResponse(
@@ -284,7 +278,7 @@ public class ResourceService {
         try {
             minioService.statObject(key);
             return true;
-        } catch (HttpClientErrorException ignored) {
+        } catch (ResponseStatusException ignored) {
             return false;
         }
     }
@@ -305,7 +299,7 @@ public class ResourceService {
 
     private static String validatePath(String path) {
         if (path == null || path.trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "path must not be empty");
+            return "/";
         }
         return path.replaceAll("^/+", "/");
     }

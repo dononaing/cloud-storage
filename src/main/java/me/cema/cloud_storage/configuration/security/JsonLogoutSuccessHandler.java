@@ -1,7 +1,6 @@
 package me.cema.cloud_storage.configuration.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import me.cema.cloud_storage.dto.user.UserExceptionResponse;

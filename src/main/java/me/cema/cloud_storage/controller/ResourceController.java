@@ -13,37 +13,46 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.nio.file.Path;
+import java.util.List;
 
 @RestController
-@RequestMapping("/resource")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class ResourceController {
 
     private final ResourceService resourceService;
 
-    @GetMapping
+    @GetMapping("/resource")
     public ResourceResponse get(@RequestParam String path,
                                 @AuthenticationPrincipal User user) {
         return resourceService.get(path, user.getId());
     }
 
-    @DeleteMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/resource")
+    public Iterable<ResourceResponse> upload(@RequestParam String path,
+                                             @RequestPart("object") List<MultipartFile> files,
+                                             @AuthenticationPrincipal User user) {
+        return resourceService.upload(path, files, user.getId());
+    }
+
+    @DeleteMapping("/resource")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@RequestParam String path,
                        @AuthenticationPrincipal User user) {
         resourceService.delete(path, user.getId());
     }
 
-    @GetMapping("/download")
+    @GetMapping("/resource/download")
     public ResponseEntity<StreamingResponseBody> download(@RequestParam String path,
                                                           @AuthenticationPrincipal User user) {
         Path convertedPath = Path.of(path);
@@ -54,31 +63,23 @@ public class ResourceController {
                 .body(resourceService.download(path, user.getId()));
     }
 
-    @GetMapping("/move")
+    @GetMapping("/resource/move")
     public ResourceResponse move(@RequestParam String from,
                                  @RequestParam String to,
                                  @AuthenticationPrincipal User user) {
         return resourceService.move(from, to, user.getId());
     }
 
-    @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping
-    public Iterable<ResourceResponse> upload(@RequestParam String path,
-                                             @RequestBody MultipartFile[] files,
+    @GetMapping("/resource/search")
+    public Iterable<ResourceResponse> search(@RequestParam String query,
                                              @AuthenticationPrincipal User user) {
-        return resourceService.upload(path, files, user.getId());
+        return resourceService.search(query, user.getId());
     }
 
     @GetMapping("/directory")
     public Iterable<ResourceResponse> getDirectoryContent(@RequestParam String path,
-                                                          @AuthenticationPrincipal User user) {
+                                                          @AuthenticationPrincipal() User user) {
         return resourceService.getDirectoryContent(path, user.getId());
-    }
-
-    @GetMapping("/search")
-    public Iterable<ResourceResponse> search(@RequestParam String query,
-                                             @AuthenticationPrincipal User user) {
-        return resourceService.search(query, user.getId());
     }
 
     @ResponseStatus(HttpStatus.CREATED)

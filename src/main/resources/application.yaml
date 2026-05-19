@@ -14,20 +14,17 @@ spring:
         show_sql: true
   jackson:
     default-property-inclusion: non_null
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 1000MB
+      max-request-size: 1000MB
 server:
   error:
     whitelabel:
       enabled: false
-    include-message: always
-    include-path: never
-    include-binding-errors: never
-    include-stacktrace: never
-    include-exception: false
-  servlet:
-    session:
-      timeout: 30m
-    context-path: /api
   port: 8080
+
 logging:
   level:
     org.springframework.security: INFO

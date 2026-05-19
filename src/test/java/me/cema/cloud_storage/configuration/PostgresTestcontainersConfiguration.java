@@ -21,7 +21,9 @@ public class PostgresTestcontainersConfiguration implements ApplicationContextIn
             .withUsername(USERNAME)
             .withPassword(PASSWORD);
 
-    static {postgreSQLContainer.start();}
+    static {
+        postgreSQLContainer.start();
+    }
 
     @Override
     public void initialize(@NotNull ConfigurableApplicationContext applicationContext) {
