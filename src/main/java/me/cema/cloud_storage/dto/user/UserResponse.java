@@ -3,6 +3,6 @@ package me.cema.cloud_storage.dto.user;
 import lombok.Data;
 
 @Data
-public class UserRegistrationResponse {
+public class UserResponse {
     private final String username;
 }

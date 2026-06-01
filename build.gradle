@@ -47,6 +47,7 @@ dependencies {
     testImplementation 'org.testcontainers:postgresql'
     testImplementation "org.testcontainers:testcontainers-minio:$minio_testcontainers"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation "com.redis.testcontainers:testcontainers-redis:$redis_testcontainers"
 }
 
 tasks.named('test') {

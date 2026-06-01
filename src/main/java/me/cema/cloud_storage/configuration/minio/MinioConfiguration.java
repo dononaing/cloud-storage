@@ -1,20 +1,19 @@
 package me.cema.cloud_storage.configuration.minio;
 
 import io.minio.MinioClient;
+import me.cema.cloud_storage.configuration.property.MinioProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@EnableConfigurationProperties(value = MinioProperties.class)
 public class MinioConfiguration {
-    private static final String URL = "http://localhost:9000";
-    private static final String USERNAME = "minioadmin";
-    private static final String PASSWORD = "minioadmin";
-
     @Bean
-    public MinioClient minioClient() {
+    public MinioClient minioClient(MinioProperties minioProperties) {
         return MinioClient.builder()
-                .endpoint(URL)
-                .credentials(USERNAME, PASSWORD)
+                .endpoint(minioProperties.getUrl())
+                .credentials(minioProperties.getUsername(), minioProperties.getPassword())
                 .build();
     }
 }

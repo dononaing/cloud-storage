@@ -2,7 +2,7 @@ package me.cema.cloud_storage.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import me.cema.cloud_storage.dto.user.UserRegistrationResponse;
+import me.cema.cloud_storage.dto.user.UserResponse;
 import me.cema.cloud_storage.dto.user.UserRequest;
 import me.cema.cloud_storage.model.user.User;
 import me.cema.cloud_storage.repository.UserRepository;
@@ -20,7 +20,7 @@ public class RegistrationService {
     private final ResourceService resourceService;
 
     @Transactional
-    public UserRegistrationResponse save(UserRequest credentials) {
+    public UserResponse save(UserRequest credentials) {
         if (userRepository.findByUsername(credentials.getUsername()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "username already exists");
         }
@@ -31,6 +31,6 @@ public class RegistrationService {
         );
         userRepository.save(user);
         resourceService.uploadEmptyDirectory("/", user.getId());
-        return new UserRegistrationResponse(credentials.getUsername());
+        return new UserResponse(credentials.getUsername());
     }
 }

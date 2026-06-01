@@ -19,6 +19,10 @@ spring:
       enabled: true
       max-file-size: 1000MB
       max-request-size: 1000MB
+  data:
+    redis:
+      port: 6379
+      host: localhost
 server:
   error:
     whitelabel:
@@ -28,3 +32,8 @@ server:
 logging:
   level:
     org.springframework.security: INFO
+
+minio:
+  username: minioadmin
+  password: minioadmin
+  url: http://localhost:9000

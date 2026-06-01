@@ -51,22 +51,63 @@ public class ResourceService {
         }
     }
 
-    public void delete(String path, Long id) {
-        path = validatePath(path);
-        String key = keyOf(path, id);
-
-        if (isDirectory(key)) {
-            List<MyItem> itemsToRemove = minioService.listObjectsRecursive(key);
-            if (itemsToRemove.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "directory does not exist");
+    public List<ResourceResponse> upload(String directoryName, List<MultipartFile> files, Long id) {
+        directoryName = validatePath(directoryName);
+        if (!directoryName.endsWith("/")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "path should end with \"/\"");
+        }
+        if (!directoryExist(keyOf(directoryName, id))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "directory does not exist: " + directoryName);
+        }
+        List<ResourceResponse> result = new ArrayList<>();
+        List<DeleteObject> uploadedObjects = new ArrayList<>();
+        for (MultipartFile file : files) {
+            String path = directoryName + file.getOriginalFilename();
+            String key = keyOf(path, id);
+            long size = file.getSize();
+            if (fileExist(key)) {
+                minioService.removeObjects(uploadedObjects);
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "file already exist: " + file.getOriginalFilename());
             }
+            try {
+                InputStream inputStream = file.getInputStream();
+                minioService.putObjectWithStreamAndContentType(key, inputStream, size, -1, file.getContentType());
+            } catch (Exception e) {
+                minioService.removeObjects(uploadedObjects);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "error while procession the file: " + file.getOriginalFilename());
+            }
+            uploadedObjects.add(new DeleteObject(key));
+            Resource resource = getResource(path, false);
+            result.add(new ResourceResponse(
+                    resource.getPath(),
+                    resource.getName(),
+                    size,
+                    ResourceType.FILE));
+        }
+        return result;
+    }
+
+    public void delete(String path, Long id) {
+        path = path.startsWith("/") ? path : "/" + validatePath(path);
+        String key = keyOf(path, id);
+        String parent;
+        if (isDirectory(key)) {
+            path = path.substring(0, path.length()-1);
+            parent = path.substring(0, path.lastIndexOf("/") + 1);
+            List<MyItem> itemsToRemove = minioService.listObjectsRecursive(key);
             List<DeleteObject> keysToRemove = itemsToRemove
                     .stream()
                     .map(item -> new DeleteObject(item.getName()))
                     .toList();
             minioService.removeObjects(keysToRemove);
         } else {
+            parent = path.substring(0, path.lastIndexOf("/") + 1);
             minioService.removeObject(key);
+        }
+        try {
+            minioService.putStubObject(keyOf(parent, id));
+        } catch (ResponseStatusException ignored) {
+
         }
     }
 
@@ -162,42 +203,6 @@ public class ResourceService {
         }
         List<DeleteObject> objectsToDelete = fromItems.stream().map(item -> new DeleteObject(item.getName())).toList();
         minioService.removeObjects(objectsToDelete);
-    }
-
-    public List<ResourceResponse> upload(String directoryName, List<MultipartFile> files, Long id) {
-        directoryName = validatePath(directoryName);
-        if (!directoryName.endsWith("/")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "path should end with \"/\"");
-        }
-        if (!directoryExist(keyOf(directoryName, id))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "directory does not exist: " + directoryName);
-        }
-        List<ResourceResponse> result = new ArrayList<>();
-        List<DeleteObject> uploadedObjects = new ArrayList<>();
-        for (MultipartFile file : files) {
-            String path = directoryName + file.getOriginalFilename();
-            String key = keyOf(path, id);
-            long size = file.getSize();
-            if (fileExist(key)) {
-                minioService.removeObjects(uploadedObjects);
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "file already exist: " + file.getOriginalFilename());
-            }
-            try {
-                InputStream inputStream = file.getInputStream();
-                minioService.putObjectWithStreamAndContentType(key, inputStream, size, -1, file.getContentType());
-            } catch (Exception e) {
-                minioService.removeObjects(uploadedObjects);
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "error while procession the file: " + file.getOriginalFilename());
-            }
-            uploadedObjects.add(new DeleteObject(key));
-            Resource resource = getResource(path, false);
-            result.add(new ResourceResponse(
-                    resource.getPath(),
-                    resource.getName(),
-                    size,
-                    ResourceType.FILE));
-        }
-        return result;
     }
 
     public List<ResourceResponse> getDirectoryContent(String path, Long id) {

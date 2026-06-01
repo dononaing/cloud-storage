@@ -1,12 +1,14 @@
 package me.cema.cloud_storage;
 
+import io.minio.MinioClient;
 import jakarta.annotation.PostConstruct;
+import me.cema.cloud_storage.configuration.MinioTestcontainersConfiguration;
 import me.cema.cloud_storage.configuration.PostgresTestcontainersConfiguration;
+import me.cema.cloud_storage.configuration.RedisTestcontainersConfiguration;
 import me.cema.cloud_storage.repository.UserRepository;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,7 +20,11 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith({SpringExtension.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ContextConfiguration(initializers = {PostgresTestcontainersConfiguration.class})
+@ContextConfiguration(initializers = {
+        PostgresTestcontainersConfiguration.class,
+        MinioTestcontainersConfiguration.class,
+        RedisTestcontainersConfiguration.class
+})
 public class CloudStorageApplicationTests {
     @LocalServerPort
     protected int port;
@@ -26,13 +32,13 @@ public class CloudStorageApplicationTests {
     public UserRepository userRepository;
     @Autowired
     public BCryptPasswordEncoder passwordEncoder;
-    @Value("${server.servlet.context-path}")
-    private String contextPath;
-    protected static final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    public MinioClient minioClient;
     protected WebTestClient webTestClient;
+    protected static final ObjectMapper objectMapper = new ObjectMapper();
 
     @PostConstruct
     void initWebTestClient() {
-        webTestClient = WebTestClient.bindToServer().baseUrl("http://localhost:" + port + contextPath).build();
+        webTestClient = WebTestClient.bindToServer().baseUrl("http://localhost:" + port + "/api").build();
     }
 }
