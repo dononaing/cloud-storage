@@ -7,6 +7,7 @@ import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import lombok.RequiredArgsConstructor;
 import me.cema.cloud_storage.dto.resourse.MyItem;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,12 +21,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MinioService {
     private final MinioClient minioClient;
-    private final static String BUCKET_NAME = "user-files";
+    @Value("${minio.bucket-name}")
+    private String bucketName;
 
     public List<MyItem> listObjects(String key, int maxKeys, boolean isRecursive) {
         Iterable<Result<io.minio.messages.Item>> results = minioClient.listObjects(
                 ListObjectsArgs.builder()
-                        .bucket(BUCKET_NAME)
+                        .bucket(bucketName)
                         .prefix(key)
                         .maxKeys(maxKeys)
                         .recursive(isRecursive)
@@ -61,7 +63,7 @@ public class MinioService {
     public MyItem statObject(String key) {
         StatObjectResponse statObjectResponse = executeWithHandling(() ->
                 minioClient.statObject(StatObjectArgs.builder()
-                        .bucket(BUCKET_NAME)
+                        .bucket(bucketName)
                         .object(key)
                         .build()));
         return new MyItem(
@@ -73,7 +75,7 @@ public class MinioService {
     public void removeObject(String key) {
         executeWithHandling(() -> {
             minioClient.removeObject(RemoveObjectArgs.builder()
-                    .bucket(BUCKET_NAME)
+                    .bucket(bucketName)
                     .object(key)
                     .build());
             return null;
@@ -82,7 +84,7 @@ public class MinioService {
 
     public void removeObjects(List<DeleteObject> keysToDelete) {
         Iterable<Result<DeleteError>> results = minioClient.removeObjects(RemoveObjectsArgs.builder()
-                .bucket(BUCKET_NAME)
+                .bucket(bucketName)
                 .objects(keysToDelete)
                 .build());
         if (results.iterator().hasNext()) {
@@ -93,7 +95,7 @@ public class MinioService {
     public void putObjectWithStreamAndContentType(String key, InputStream stream, long size, long partSize, String contentType) {
         executeWithHandling(() ->
                 minioClient.putObject(PutObjectArgs.builder()
-                        .bucket(BUCKET_NAME)
+                        .bucket(bucketName)
                         .object(key)
                         .stream(stream, size, partSize)
                         .contentType(contentType)
@@ -103,7 +105,7 @@ public class MinioService {
     public void putStubObject(String key) {
         executeWithHandling(() ->
                 minioClient.putObject(PutObjectArgs.builder()
-                        .bucket(BUCKET_NAME)
+                        .bucket(bucketName)
                         .object(key)
                         .stream(new ByteArrayInputStream(new byte[]{}), 0, -1)
                         .build()));
@@ -112,10 +114,10 @@ public class MinioService {
     public void copyObject(String fromKey, String toKey) {
         executeWithHandling(() ->
                 minioClient.copyObject(CopyObjectArgs.builder().
-                        bucket(BUCKET_NAME)
+                        bucket(bucketName)
                         .object(toKey)
                         .source(CopySource.builder()
-                                .bucket(BUCKET_NAME)
+                                .bucket(bucketName)
                                 .object(fromKey)
                                 .build())
                         .build()));
@@ -124,7 +126,7 @@ public class MinioService {
     public byte[] getObject(String key) {
         GetObjectResponse getObjectResponse = executeWithHandling(() ->
                 minioClient.getObject(GetObjectArgs.builder()
-                        .bucket(BUCKET_NAME)
+                        .bucket(bucketName)
                         .object(key)
                         .build()));
         try {

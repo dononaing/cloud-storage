@@ -1,6 +1,5 @@
 package me.cema.cloud_storage.configuration.security;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,12 +14,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfiguration {
-
-    private final JsonAccessDeniedHandler jsonAccessDeniedHandler;
-    private final JsonAuthenticationEntryPoint jsonAuthenticationEntryPoint;
-    private final JsonLogoutSuccessHandler jsonLogoutSuccessHandler;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -33,7 +27,10 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           JsonAccessDeniedHandler jsonAccessDeniedHandler,
+                                           JsonAuthenticationEntryPoint jsonAuthenticationEntryPoint,
+                                           JsonLogoutSuccessHandler jsonLogoutSuccessHandler) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exc -> exc

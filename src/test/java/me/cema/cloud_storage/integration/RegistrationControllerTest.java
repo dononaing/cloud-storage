@@ -11,8 +11,8 @@ import me.cema.cloud_storage.dto.user.UserExceptionResponse;
 import me.cema.cloud_storage.dto.user.UserRequest;
 import me.cema.cloud_storage.dto.user.UserResponse;
 import me.cema.cloud_storage.model.user.User;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -36,7 +36,7 @@ class RegistrationControllerTest extends CloudStorageApplicationTests {
         }
     }
 
-    @BeforeEach
+    @AfterEach
     void clearContainers() {
         userRepository.deleteAll();
         Iterable<Result<Item>> results = minioClient.listObjects(ListObjectsArgs.builder()
@@ -97,45 +97,11 @@ class RegistrationControllerTest extends CloudStorageApplicationTests {
         exchange.expectBody().json(objectMapper.writeValueAsString(new UserExceptionResponse("409 CONFLICT \"username already exists\"")));
     }
 
-    /*@Test
-    void signUp_authenticatedUser_mustThrowException_return403WithValidExceptionBody() throws JsonProcessingException {
-        UserRequest userRequest = new UserRequest(
-                TEST_USERNAME,
-                "testPassword"
-        );
-
-        WebTestClient.ResponseSpec exchange = webTestClient
-                .post()
-                .uri("/auth/sign-up")
-                .bodyValue(userRequest)
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange();
-        exchange.expectStatus().isEqualTo(201);
-        exchange.expectCookie().exists("SESSION");
-
-        String sessionId = exchange.returnResult(Void.class)
-                .getResponseCookies()
-                .getFirst("SESSION")
-                .getValue();
-
-        WebTestClient.ResponseSpec authenticatedExchange = webTestClient
-                .post()
-                .uri("/auth/sign-up")
-                .cookies(cookies -> cookies.add("SESSION", sessionId))
-                .bodyValue(userRequest)
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange();
-        authenticatedExchange.expectStatus().isEqualTo(403);
-        authenticatedExchange.expectBody().json((objectMapper.writeValueAsString(
-                new UserExceptionResponse("Access Denied")
-        )));
-    }*/
-
     @Test
-    void signUp_unauthenticatedUserInvalidCredentials_mustThrowException_return400WithValidExceptionBody() {
+    void signUp_unauthenticatedUserInvalidCredentials_mustThrowException_return400WithValidExceptionBody() throws JsonProcessingException {
         UserRequest invalidUserRequest = new UserRequest(
                 "us",
-                "password"
+                "pas"
         );
         WebTestClient.ResponseSpec exchange = webTestClient
                 .post()
@@ -144,5 +110,8 @@ class RegistrationControllerTest extends CloudStorageApplicationTests {
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange();
         exchange.expectStatus().isEqualTo(400);
+        exchange.expectBody().json(objectMapper.writeValueAsString(new UserExceptionResponse("name must be between 5 and 20 characters" +
+                ";password must be between 5 and 20 characters")));
+
     }
 }

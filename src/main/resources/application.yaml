@@ -37,3 +37,4 @@ minio:
   username: minioadmin
   password: minioadmin
   url: http://localhost:9000
+  bucket-name: user-files

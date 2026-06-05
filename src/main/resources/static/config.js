@@ -23,8 +23,8 @@ window.APP_CONFIG = {
     //Если true - форма будет валидироваться,
     //ошибки будут отображаться при вводе. Кнопка будет активна только при валидных данных
     //Если false - форму можно отправить без валидации.
-    validateLoginForm: true,
-    validateRegistrationForm: true,
+    validateLoginForm: false,
+    validateRegistrationForm: false,
 
     //корректное имя пользователя
     validUsername: {
