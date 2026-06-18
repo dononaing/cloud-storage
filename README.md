@@ -12,4 +12,3 @@ React
 # to run locally
 Requirements:  
 Docker (https://www.docker.com/products/docker-desktop/)  
- 
