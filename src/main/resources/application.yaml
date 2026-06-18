@@ -2,13 +2,13 @@ spring:
   application:
     name: cloud-storage
   datasource:
-    url: jdbc:postgresql://host.docker.internal:5430/cloud_storage_db
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     properties:
       hibernate:
         show_sql: true
@@ -21,8 +21,8 @@ spring:
       max-request-size: 1000MB
   data:
     redis:
-      port: 6379
-      host: localhost
+      port: ${SPRING_DATA_REDIS_PORT}
+      host: ${SPRING_DATA_REDIS_HOST}
 server:
   error:
     whitelabel:
@@ -34,7 +34,7 @@ logging:
     org.springframework.security: INFO
 
 minio:
-  username: minioadmin
-  password: minioadmin
-  url: http://localhost:9000
-  bucket-name: user-files
+  username: ${MINIO_USERNAME}
+  password: ${MINIO_PASSWORD}
+  url: ${MINIO_URL}
+  bucket-name: ${MINIO_BUCKET_NAME}
